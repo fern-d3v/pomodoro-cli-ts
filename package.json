@@ -1,0 +1,27 @@
+{
+  "name": "pomodoro-timer",
+  "version": "1.0.0",
+  "description": "A simple Pomodoro Timer CLI built with TypeScript and Bun",
+  "main": "dist/index.js",
+  "module": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "build": "bun build src/index.ts --outdir dist --target node",
+    "start": "bun run dist/index.js",
+    "demo:basic": "bun run index.ts",
+    "demo:pomodoro": "bun run src/pomodoro.ts",
+    "demo:countdown": "bun run src/countdown.ts",
+    "demo:full": "bun run src/full-pomodoro.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node": "^20.0.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0"
+  }
+}
