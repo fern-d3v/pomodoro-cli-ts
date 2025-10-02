@@ -1,3 +1,5 @@
+#!/usr/bin/env bun
+
 // 🍅 Pomodoro Timer CLI - Main Entry Point
 // Built with TypeScript and Bun
 
@@ -243,14 +245,14 @@ async function showMenu(): Promise<{ type: SessionType; duration: number } | nul
   console.clear();
   
   console.log(chalk.hex(COLORS.mauve).bold('='.repeat(50)));
-  console.log(chalk.hex(COLORS.mauve).bold('       POMODORO TIMER CLI'));
+  console.log(chalk.hex(COLORS.mauve).bold('               POMODORO TIMER CLI'));
   console.log(chalk.hex(COLORS.mauve).bold('='.repeat(50)));
-  console.log(chalk.hex(COLORS.subtext1)('Built with TypeScript and Bun'));
+  console.log(chalk.hex(COLORS.subtext1)('Built with TypeScript and Bun ❥'));
   console.log();
   
   console.log(chalk.hex(COLORS.text)('Select session type:'));
   console.log(chalk.hex(COLORS.peach)('  1.') + chalk.hex(COLORS.text)(' Work Session (25 minutes)'));
-  console.log(chalk.hex(COLORS.peach)('  2.') + chalk.hex(COLORS.text)(' Study Session (25 minutes)'));
+  console.log(chalk.hex(COLORS.peach)('  2.') + chalk.hex(COLORS.text)(' Study Session (30 minutes)'));
   console.log(chalk.hex(COLORS.peach)('  3.') + chalk.hex(COLORS.text)(' Short Break (5 minutes)'));
   console.log(chalk.hex(COLORS.peach)('  4.') + chalk.hex(COLORS.text)(' Long Break (15 minutes)'));
   console.log(chalk.hex(COLORS.peach)('  5.') + chalk.hex(COLORS.text)(' Custom Duration'));
