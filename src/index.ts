@@ -53,6 +53,7 @@ const COLORS = {
 const pomodoro = {
   state: TimerState.STOPPED as TimerState,
   currentSession: SessionType.WORK as SessionType,
+  primarySessionType: SessionType.WORK as SessionType, // Track whether we're in WORK or STUDY mode
   remainingSeconds: 0 as number,
   intervalId: null as NodeJS.Timeout | null,
   completedWorkSessions: 0 as number,
@@ -76,11 +77,18 @@ function formatTime(totalSeconds: number): string {
   return `${minutes}:${secondsStr}`;
 }
 
-// Play audio file on macOS using afplay
+// Play audio file on macOS - uses AppleScript to ensure sound plays even when window is not active
 function playSound(audioPath: string): void {
   try {
-    // Use Bun's spawn to play audio without blocking
-    Bun.spawn(['afplay', audioPath], {
+    // Convert relative path to absolute path
+    const absolutePath = audioPath.startsWith('/') ? audioPath : `${process.cwd()}/${audioPath}`;
+    
+    // Use AppleScript to play the sound - this works even when the terminal is not active
+    // AppleScript's sound playback is not suppressed when the app is in the background
+    // Note: We don't set the volume, so it plays at the current system volume
+    const script = `do shell script "afplay " & quoted form of "${absolutePath}"`;
+    
+    Bun.spawn(['osascript', '-e', script], {
       stdout: 'ignore',
       stderr: 'ignore',
     });
@@ -136,13 +144,14 @@ function completeCurrentSession(): void {
   // Play a bell sound (if terminal supports it)
   console.log('\x07'); // Bell character
   
-  if (pomodoro.currentSession === SessionType.WORK) {
+  if (pomodoro.currentSession === SessionType.WORK || pomodoro.currentSession === SessionType.STUDY) {
     pomodoro.completedWorkSessions++;
-    console.log(chalk.hex(COLORS.green).bold('Work session complete! Great job!'));
+    const sessionName = pomodoro.currentSession === SessionType.WORK ? 'Work' : 'Study';
+    console.log(chalk.hex(COLORS.green).bold(`${sessionName} session complete! Great job!`));
 
     // Check if it's time for a long break
     if (pomodoro.completedWorkSessions >= pomodoro.sessionsUntilLongBreak) {
-    console.log(chalk.hex(COLORS.teal).bold('Time for a long break! You\'ve earned it!'));
+      console.log(chalk.hex(COLORS.teal).bold('Time for a long break! You\'ve earned it!'));
       startSession(SessionType.LONG_BREAK, SESSION_DURATIONS.LONG_BREAK);
       pomodoro.completedWorkSessions = 0; // Reset counter
     } else {
@@ -150,9 +159,15 @@ function completeCurrentSession(): void {
       startSession(SessionType.SHORT_BREAK, SESSION_DURATIONS.SHORT_BREAK);
     }
   } else {
-    // Finished a break
-    console.log(chalk.hex(COLORS.red).bold('Break\'s over! Back to work!'));
-    startSession(SessionType.WORK, SESSION_DURATIONS.WORK);
+    // Finished a break - return to the primary session type (WORK or STUDY)
+    const sessionName = pomodoro.primarySessionType === SessionType.WORK ? 'work' : 'study';
+    console.log(chalk.hex(COLORS.red).bold(`Break's over! Back to ${sessionName}!`));
+    
+    if (pomodoro.primarySessionType === SessionType.STUDY) {
+      startSession(SessionType.STUDY, SESSION_DURATIONS.STUDY);
+    } else {
+      startSession(SessionType.WORK, SESSION_DURATIONS.WORK);
+    }
   }
 }
 
@@ -167,6 +182,11 @@ function startSession(sessionType: SessionType, durationSeconds: number): void {
   pomodoro.state = TimerState.RUNNING;
   pomodoro.currentSession = sessionType;
   pomodoro.remainingSeconds = durationSeconds;
+  
+  // If starting a WORK or STUDY session, update the primary session type
+  if (sessionType === SessionType.WORK || sessionType === SessionType.STUDY) {
+    pomodoro.primarySessionType = sessionType;
+  }
 
   // Start the countdown
   pomodoro.intervalId = setInterval(tick, 1000);
