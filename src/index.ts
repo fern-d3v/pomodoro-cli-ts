@@ -77,20 +77,19 @@ function formatTime(totalSeconds: number): string {
   return `${minutes}:${secondsStr}`;
 }
 
-// Play audio file on macOS - uses AppleScript to ensure sound plays even when window is not active
+// Play audio file on macOS at 0.25x system volume
+// Uses afplay which works even when terminal is not active
 function playSound(audioPath: string): void {
   try {
     // Convert relative path to absolute path
     const absolutePath = audioPath.startsWith('/') ? audioPath : `${process.cwd()}/${audioPath}`;
     
-    // Use AppleScript to play the sound - this works even when the terminal is not active
-    // AppleScript's sound playback is not suppressed when the app is in the background
-    // Note: We don't set the volume, so it plays at the current system volume
-    const script = `do shell script "afplay " & quoted form of "${absolutePath}"`;
-    
-    Bun.spawn(['osascript', '-e', script], {
+    // Use afplay with -v flag to control volume
+    // -v 0.25 means play at 25% (0.25x) of system volume
+    // This runs in the background and doesn't block
+    Bun.spawn(['afplay', '-v', '0.25', absolutePath], {
       stdout: 'ignore',
-      stderr: 'ignore',
+      stderr: 'pipe',
     });
   } catch (error) {
     // Silently fail if audio doesn't work
@@ -140,9 +139,6 @@ function getSessionDisplay(): string {
 function completeCurrentSession(): void {
   // Play completion sound
   playSound('./assets/Sound of a Glitch.wav');
-  
-  // Play a bell sound (if terminal supports it)
-  console.log('\x07'); // Bell character
   
   if (pomodoro.currentSession === SessionType.WORK || pomodoro.currentSession === SessionType.STUDY) {
     pomodoro.completedWorkSessions++;
