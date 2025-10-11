@@ -46,7 +46,7 @@ function tick(): void {
   // Show countdown with session info
   const sessionInfo = `${pomodoro.currentSession} (${pomodoro.completedWorkSessions}/4 work sessions completed)`;
   console.log(
-    `⏰ ${sessionInfo}: ${formatTime(pomodoro.remainingSeconds)} remaining`,
+    `${sessionInfo}: ${formatTime(pomodoro.remainingSeconds)} remaining`,
   );
 
   // When session completes, auto-transition!
@@ -56,7 +56,7 @@ function tick(): void {
 }
 
 function completeCurrentSession(): void {
-  console.log(`🎉 ${pomodoro.currentSession} complete!`);
+  console.log(`${pomodoro.currentSession} complete!`);
 
   // If we just finished a WORK session
   if (pomodoro.currentSession === SessionType.WORK) {
@@ -74,7 +74,7 @@ function completeCurrentSession(): void {
   }
   // If we just finished a break (short or long)
   else {
-    console.log("🍅 Back to work!");
+    console.log("Back to work!");
     startSession(SessionType.WORK, SESSION_DURATIONS.WORK);
   }
 }
@@ -94,14 +94,14 @@ function startSession(sessionType: SessionType, durationSeconds: number): void {
   pomodoro.intervalId = setInterval(tick, 1000);
 
   console.log(
-    `\n🚀 Starting ${sessionType}! Duration: ${formatTime(durationSeconds)}`,
+    `\nStarting ${sessionType}! Duration: ${formatTime(durationSeconds)}`,
   );
 }
 
 function startPomodoro(): void {
-  console.log("🍅 Welcome to the Pomodoro Techsique!");
+  console.log("Welcome to the Pomodoro Technique!");
   console.log(
-    "Work sessions: 25 minutes | Short breaks: 5 minutes | Long break every 4 work sessions",
+    "Sessions: 25 minutes | Short breaks: 5 minutes | Long break every 4  sessions",
   );
 
   startSession(SessionType.WORK, SESSION_DURATIONS.WORK);
@@ -109,13 +109,13 @@ function startPomodoro(): void {
 
 function pausePomodoro(): void {
   pomodoro.state = TimerState.PAUSED;
-  console.log("⏸️ Pomodoro paused!");
+  console.log("⏸ Pomodoro paused!");
 }
 
 function resumePomodoro(): void {
   if (pomodoro.state === TimerState.PAUSED) {
     pomodoro.state = TimerState.RUNNING;
-    console.log("▶️ Pomodoro resumed!");
+    console.log("▶ Pomodoro resumed!");
   }
 }
 
@@ -127,7 +127,7 @@ function stopPomodoro(): void {
   }
   pomodoro.remainingSeconds = 0;
   pomodoro.completedWorkSessions = 0;
-  console.log("🛑 Pomodoro stopped! Great work today!");
+  console.log("Pomodoro stopped! Great work today!");
 }
 
 // Initialize and start!
@@ -135,7 +135,7 @@ pomodoro.completedWorkSessions = 0;
 pomodoro.sessionsUntilLongBreak = 4;
 
 console.log("=".repeat(50));
-console.log("🍅 COMPLETE POMODORO TIMER 🍅");
+console.log("COMPLETE POMODORO TIMER");
 console.log("=".repeat(50));
 
 startPomodoro();

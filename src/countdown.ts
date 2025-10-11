@@ -41,7 +41,7 @@ function tick(): void {
 
   // Show the countdown
   console.log(
-    `⏰ ${timer.currentSession}: ${formatTime(timer.remainingSeconds)} remaining`,
+    `${timer.currentSession}: ${formatTime(timer.remainingSeconds)} remaining`,
   );
 
   // TODO: What happens when we reach 0?
@@ -57,7 +57,7 @@ function startWorkSession(): void {
   timer.currentSession = SessionType.WORK;
   timer.remainingSeconds = 25 * 60; // Convert 25 minutes to seconds
 
-  console.log("🍅 Work session started!");
+  console.log("Work session started!");
 
   // Start the countdown! Run tick() every 1000ms (1 second)
   timer.intervalId = setInterval(tick, 1000);
@@ -73,7 +73,7 @@ function stopTimer(): void {
     timer.intervalId = null;
   }
 
-  console.log("🛑 Timer stopped!");
+  console.log("Timer stopped!");
 }
 
 // TODO: Test with a SHORT timer so we can see it complete
@@ -83,7 +83,7 @@ function startTestTimer(): void {
   timer.currentSession = SessionType.WORK;
   timer.remainingSeconds = 5; // Just 5 seconds for testing
 
-  console.log("🧪 Test timer started!");
+  console.log("Test timer started!");
   timer.intervalId = setInterval(tick, 1000);
 }
 

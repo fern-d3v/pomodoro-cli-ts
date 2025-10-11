@@ -35,5 +35,5 @@ startWorkSession();
 function pauseTimer(): void {
   timer.state = TimerState.PAUSED;
   timer.currentSession = SessionType.WORK;
-  timer.remainingMinutes = `${timer.remainingMinutes}`;
+  timer.remainingMinutes = timer.remainingMinutes; // Creates a string
 }

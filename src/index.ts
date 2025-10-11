@@ -13,6 +13,7 @@ enum TimerState {
 }
 
 enum SessionType {
+  DEV = "Development Session",
   WORK = "Work Session",
   STUDY = "Study Session",
   SHORT_BREAK = "Short Break", 
@@ -60,8 +61,9 @@ const pomodoro = {
   sessionsUntilLongBreak: 4 as number,
 };
 
-// Session durations in seconds (25 min work, 5 min short break, 15 min long break)
+// Session durations in seconds (30 min dev, 25 min work, 30 min study, 5 min short break, 15 min long break)
 const SESSION_DURATIONS = {
+  DEV: 30 * 60,       // 30 minutes
   WORK: 25 * 60,        // 25 minutes
   STUDY: 30 * 60,       // 30 minutes
   SHORT_BREAK: 5 * 60,  // 5 minutes
@@ -82,7 +84,9 @@ function formatTime(totalSeconds: number): string {
 function playSound(audioPath: string): void {
   try {
     // Convert relative path to absolute path
-    const absolutePath = audioPath.startsWith('/') ? audioPath : `${process.cwd()}/${audioPath}`;
+    const absolutePath = audioPath.startsWith('/') 
+      ? audioPath 
+      : new URL(audioPath, import.meta.url).pathname;
     
     // Use afplay with -v flag to control volume
     // -v 0.25 means play at 25% (0.25x) of system volume
@@ -122,6 +126,8 @@ function tick(): void {
 // Get colored display for current session type
 function getSessionDisplay(): string {
   switch (pomodoro.currentSession) {
+    case SessionType.DEV:
+      return chalk.hex(COLORS.sky)('[DEV]');
     case SessionType.WORK:
       return chalk.hex(COLORS.red)('[WORK]');
     case SessionType.STUDY:
@@ -267,16 +273,17 @@ async function showMenu(): Promise<{ type: SessionType; duration: number } | nul
   console.log();
   
   console.log(chalk.hex(COLORS.text)('Select session type:'));
-  console.log(chalk.hex(COLORS.peach)('  1.') + chalk.hex(COLORS.text)(' Work Session (25 minutes)'));
-  console.log(chalk.hex(COLORS.peach)('  2.') + chalk.hex(COLORS.text)(' Study Session (30 minutes)'));
-  console.log(chalk.hex(COLORS.peach)('  3.') + chalk.hex(COLORS.text)(' Short Break (5 minutes)'));
-  console.log(chalk.hex(COLORS.peach)('  4.') + chalk.hex(COLORS.text)(' Long Break (15 minutes)'));
-  console.log(chalk.hex(COLORS.peach)('  5.') + chalk.hex(COLORS.text)(' Custom Duration'));
-  console.log(chalk.hex(COLORS.peach)('  6.') + chalk.hex(COLORS.text)(' Exit'));
+  console.log(chalk.hex(COLORS.peach)('  1.') + chalk.hex(COLORS.text)('Development Session (30 minutes)'));
+  console.log(chalk.hex(COLORS.peach)('  2.') + chalk.hex(COLORS.text)(' Work Session (25 minutes)'));
+  console.log(chalk.hex(COLORS.peach)('  3.') + chalk.hex(COLORS.text)(' Study Session (30 minutes)'));
+  console.log(chalk.hex(COLORS.peach)('  4.') + chalk.hex(COLORS.text)(' Short Break (5 minutes)'));
+  console.log(chalk.hex(COLORS.peach)('  5.') + chalk.hex(COLORS.text)(' Long Break (15 minutes)'));
+  console.log(chalk.hex(COLORS.peach)('  6.') + chalk.hex(COLORS.text)(' Custom Duration'));
+  console.log(chalk.hex(COLORS.peach)('  7.') + chalk.hex(COLORS.text)(' Exit'));
   console.log();
   
   // Read user input
-  process.stdout.write(chalk.hex(COLORS.yellow)('Enter choice (1-6): '));
+  process.stdout.write(chalk.hex(COLORS.yellow)('Enter choice (1-7): '));
   
   // Wait for user input
   const choice = await new Promise<string>((resolve) => {
@@ -287,14 +294,16 @@ async function showMenu(): Promise<{ type: SessionType; duration: number } | nul
   
   switch (choice) {
     case '1':
-      return { type: SessionType.WORK, duration: SESSION_DURATIONS.WORK };
+      return { type: SessionType.DEV, duration: SESSION_DURATIONS.DEV };
     case '2':
-      return { type: SessionType.STUDY, duration: SESSION_DURATIONS.STUDY };
+      return { type: SessionType.WORK, duration: SESSION_DURATIONS.WORK };
     case '3':
-      return { type: SessionType.SHORT_BREAK, duration: SESSION_DURATIONS.SHORT_BREAK };
+      return { type: SessionType.STUDY, duration: SESSION_DURATIONS.STUDY };
     case '4':
-      return { type: SessionType.LONG_BREAK, duration: SESSION_DURATIONS.LONG_BREAK };
+      return { type: SessionType.SHORT_BREAK, duration: SESSION_DURATIONS.SHORT_BREAK };
     case '5':
+      return { type: SessionType.LONG_BREAK, duration: SESSION_DURATIONS.LONG_BREAK };
+    case '6':
       // Custom duration
       process.stdout.write(chalk.hex(COLORS.yellow)('Enter duration in minutes: '));
       const minutes = await new Promise<string>((resolve) => {
