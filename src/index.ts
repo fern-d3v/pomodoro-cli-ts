@@ -80,27 +80,39 @@ function formatTime(totalSeconds: number): string {
 }
 
 // Play audio file on macOS at 0.25x system volume
-// Uses afplay which works even when terminal is not active
-function playSound(audioPath: string): void {
+async function playSound(audioPath: string): Promise<void> {
   try {
     // Convert relative path to absolute path
     const absolutePath = audioPath.startsWith('/') 
       ? audioPath 
-      : new URL(audioPath, import.meta.url).pathname;
+      : `${import.meta.dir}/${audioPath.replace(/^\.\//, '')}`; // Remove leading './' if present
     
-    // Use afplay with -v flag to control volume
-    // -v 0.25 means play at 25% (0.25x) of system volume
-    // This runs in the background and doesn't block
-    Bun.spawn(['afplay', '-v', '0.25', absolutePath], {
+    // Check if file exists before trying to play
+    const file = Bun.file(absolutePath);
+    const exists = await file.exists();
+    if (!exists) {
+      console.error(chalk.red(`\nAudio file not found: ${absolutePath}`));
+      return;
+    }
+
+    /* use afplay with -v flag to control volume
+    this runs in the background and doesn't block
+    */
+    const proc = Bun.spawn(['afplay', '-v', '0.5', absolutePath], { // Increased to 50%
       stdout: 'ignore',
       stderr: 'pipe',
     });
+    
+    // Optional: log errors from stderr
+    const stderrText = await new Response(proc.stderr).text();
+    if (stderrText) {
+      console.error(chalk.red('\nAudio playback error:', stderrText));
+    }
   } catch (error) {
-    // Silently fail if audio doesn't work
-    console.error('Could not play audio:', error);
+    // silently fail if audio doesn't work
+    console.error(chalk.red('\nCould not play audio:', error));
   }
 }
-
 // The main countdown function that runs every second
 function tick(): void {
   if (pomodoro.state !== TimerState.RUNNING) return;
@@ -142,9 +154,9 @@ function getSessionDisplay(): string {
 }
 
 // Handle session completion and auto-transitions
-function completeCurrentSession(): void {
-  // Play completion sound
-  playSound('./assets/Sound of a Glitch.wav');
+async function completeCurrentSession(): Promise<void> {
+  // Play completion sound - assets folder is at project root
+  await playSound('../assets/Sound of a Glitch.wav');
   
   if (pomodoro.currentSession === SessionType.WORK || pomodoro.currentSession === SessionType.STUDY) {
     pomodoro.completedWorkSessions++;
