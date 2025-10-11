@@ -124,12 +124,17 @@ function tick(): void {
   
   const timeDisplay = chalk.hex(COLORS.yellow).bold(formatTime(pomodoro.remainingSeconds));
   const sessionDisplay = getSessionDisplay();
-  const progressDisplay = `(${pomodoro.completedWorkSessions}/4 work sessions completed)`;
+  const progressDisplay = `(${pomodoro.completedWorkSessions}/4 sessions completed)`;
   
   process.stdout.write(`${sessionDisplay} ${timeDisplay} remaining ${chalk.hex(COLORS.overlay2)(progressDisplay)}`);
 
   // When session completes, auto-transition!
   if (pomodoro.remainingSeconds <= 0) {
+    // stop the timer FIRST to prevent multiple triggers
+    if (pomodoro.intervalId) {
+      clearInterval(pomodoro.intervalId);
+      pomodoro.intervalId = null;
+    }
     console.log(); // New line
     completeCurrentSession();
   }
@@ -285,7 +290,7 @@ async function showMenu(): Promise<{ type: SessionType; duration: number } | nul
   console.log();
   
   console.log(chalk.hex(COLORS.text)('Select session type:'));
-  console.log(chalk.hex(COLORS.peach)('  1.') + chalk.hex(COLORS.text)('Development Session (30 minutes)'));
+  console.log(chalk.hex(COLORS.peach)('  1.') + chalk.hex(COLORS.text)(' Development Session (30 minutes)'));
   console.log(chalk.hex(COLORS.peach)('  2.') + chalk.hex(COLORS.text)(' Work Session (25 minutes)'));
   console.log(chalk.hex(COLORS.peach)('  3.') + chalk.hex(COLORS.text)(' Study Session (30 minutes)'));
   console.log(chalk.hex(COLORS.peach)('  4.') + chalk.hex(COLORS.text)(' Short Break (5 minutes)'));
