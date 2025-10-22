@@ -54,16 +54,17 @@ const COLORS = {
 const pomodoro = {
   state: TimerState.STOPPED as TimerState,
   currentSession: SessionType.WORK as SessionType,
-  primarySessionType: SessionType.WORK as SessionType, // Track whether we're in WORK or STUDY mode
+  primarySessionType: SessionType.WORK as SessionType,
   remainingSeconds: 0 as number,
   intervalId: null as NodeJS.Timeout | null,
   completedWorkSessions: 0 as number,
   sessionsUntilLongBreak: 4 as number,
+  isDevSession: false as boolean, // Track if we're in a DEV session cycle
 };
 
-// Session durations in seconds (30 min dev, 25 min work, 30 min study, 5 min short break, 15 min long break)
+// Session durations in seconds (60 min dev, 25 min work, 30 min study, 5 min short break, 15 min long break)
 const SESSION_DURATIONS = {
-  DEV: 30 * 60,       // 30 minutes
+  DEV: 60 * 60,       // 60 minutes
   WORK: 25 * 60,        // 25 minutes
   STUDY: 30 * 60,       // 30 minutes
   SHORT_BREAK: 5 * 60,  // 5 minutes
@@ -163,7 +164,11 @@ async function completeCurrentSession(): Promise<void> {
   // Play completion sound - assets folder is at project root
   await playSound('../assets/Sound of a Glitch.wav');
   
-  if (pomodoro.currentSession === SessionType.WORK || pomodoro.currentSession === SessionType.STUDY) {
+  if (pomodoro.currentSession === SessionType.DEV) {
+    // DEV sessions always get a 15 minute break
+    console.log(chalk.hex(COLORS.green).bold('Dev session complete! Time for a 15 minute break!'));
+    startSession(SessionType.LONG_BREAK, SESSION_DURATIONS.LONG_BREAK);
+  } else if (pomodoro.currentSession === SessionType.WORK || pomodoro.currentSession === SessionType.STUDY) {
     pomodoro.completedWorkSessions++;
     const sessionName = pomodoro.currentSession === SessionType.WORK ? 'Work' : 'Study';
     console.log(chalk.hex(COLORS.green).bold(`${sessionName} session complete! Great job!`));
@@ -178,12 +183,14 @@ async function completeCurrentSession(): Promise<void> {
       startSession(SessionType.SHORT_BREAK, SESSION_DURATIONS.SHORT_BREAK);
     }
   } else {
-    // Finished a break - return to the primary session type (WORK or STUDY)
-    const sessionName = pomodoro.primarySessionType === SessionType.WORK ? 'work' : 'study';
+    // Finished a break - return to the primary session type
+    const sessionName = pomodoro.primarySessionType === SessionType.WORK ? 'work' : pomodoro.primarySessionType === SessionType.STUDY ? 'study' : 'dev';
     console.log(chalk.hex(COLORS.red).bold(`Break's over! Back to ${sessionName}!`));
     
     if (pomodoro.primarySessionType === SessionType.STUDY) {
       startSession(SessionType.STUDY, SESSION_DURATIONS.STUDY);
+    } else if (pomodoro.primarySessionType === SessionType.DEV) {
+      startSession(SessionType.DEV, SESSION_DURATIONS.DEV);
     } else {
       startSession(SessionType.WORK, SESSION_DURATIONS.WORK);
     }
@@ -202,8 +209,8 @@ function startSession(sessionType: SessionType, durationSeconds: number): void {
   pomodoro.currentSession = sessionType;
   pomodoro.remainingSeconds = durationSeconds;
   
-  // If starting a WORK or STUDY session, update the primary session type
-  if (sessionType === SessionType.WORK || sessionType === SessionType.STUDY) {
+  // If starting a WORK, STUDY, or DEV session, update the primary session type
+  if (sessionType === SessionType.WORK || sessionType === SessionType.STUDY || sessionType === SessionType.DEV) {
     pomodoro.primarySessionType = sessionType;
   }
 

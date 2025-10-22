@@ -7,7 +7,7 @@ enum TimerState {
 }
 
 enum SessionType {
-  DEV = "Dev Session (25 Minutes)",
+  DEV = "Dev Session (60 Minutes)",
   STUDY = "Study Session (25 minutes)",
   WORK = "Work Session (25 minutes)", // Work session (25 minutes)
   SHORT_BREAK = "Short break (5 minutes)", // Short break (5 minutes)
