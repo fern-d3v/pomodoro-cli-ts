@@ -1,7 +1,7 @@
 #!/bin/bash
 # Quick start script for Pomodoro Timer
 
-echo "🍅 Starting Pomodoro Timer..."
+echo "Starting Pomodoro Timer..."
 echo "Make sure you have bun installed: https://bun.sh"
 echo ""
 
@@ -14,10 +14,10 @@ fi
 
 # Install dependencies if node_modules doesn't exist
 if [ ! -d "node_modules" ]; then
-    echo "📦 Installing dependencies..."
+    echo "Installing dependencies..."
     bun install
 fi
 
 # Start the timer
-echo "🚀 Starting timer..."
+echo "Starting timer..."
 bun run dev
